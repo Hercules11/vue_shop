@@ -1,0 +1,18 @@
+html,
+body,
+#app {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.el-breadcrumb {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+.el-row > .el-col {
+    margin-bottom: 10px;
+}
+.el-pagination {
+    margin-top: 10px;
+}

@@ -78,3 +78,7 @@
 [2022-02-18T21:07:59.861] [DEBUG] cheese - admin
 [2022-02-18T21:08:01.207] [DEBUG] cheese - null
 [2022-02-18T21:08:01.207] [DEBUG] cheese - null
+[2024-05-06T01:34:52.555] [DEBUG] cheese - login => username:admin,password:123456
+[2024-05-06T01:34:52.556] [DEBUG] cheese - admin
+[2024-05-06T01:34:52.569] [DEBUG] cheese - null
+[2024-05-06T01:34:52.570] [DEBUG] cheese - null

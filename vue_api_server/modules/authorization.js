@@ -1,7 +1,6 @@
 var path = require('path')
 // var roles_controller = require("../controllers/roles");
 
-
 global.service_caches = {}
 
 // 存储全局验证函数

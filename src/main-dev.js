@@ -7,7 +7,6 @@ import TreeTable from 'vue-table-with-tree-grid'
 // 导入字体图标
 import 'element-ui/lib/theme-chalk/index.css'
 import './assets/fonts/iconfont.css'
-// 导入全局样式表
 import './assets/global.css'
 // 导入富文本编辑器
 

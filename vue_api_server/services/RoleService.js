@@ -1,17 +1,17 @@
 var _ = require('lodash')
 var path = require('path')
 var dao = require(path.join(process.cwd(), 'dao/DAO'))
-var permissionAPIDAO = require(path.join(process.cwd(), 'dao/PermissionAPIDAO'))
+var permissionApiDAO = require(path.join(process.cwd(), 'dao/PermissionApiDAO'))
 
 function getPermissionsResult(permissionKeys, permissionIds) {
   var permissionsResult = {}
 
   // 处理一级菜单
   for (idx in permissionIds) {
-    if (!permissionIds[idx] || permissionIds[idx] == '') continue
+    if (!permissionIds[idx] || permissionIds[idx] === '') continue
     permissionId = parseInt(permissionIds[idx])
     permission = permissionKeys[permissionId]
-    if (permission && permission.ps_level == 0) {
+    if (permission && permission.ps_level === 0) {
       permissionsResult[permission.ps_id] = {
         id: permission.ps_id,
         authName: permission.ps_name,
@@ -25,10 +25,10 @@ function getPermissionsResult(permissionKeys, permissionIds) {
   tmpResult = {}
   // 处理二级菜单
   for (idx in permissionIds) {
-    if (!permissionIds[idx] || permissionIds[idx] == '') continue
+    if (!permissionIds[idx] || permissionIds[idx] === '') continue
     permissionId = parseInt(permissionIds[idx])
     permission = permissionKeys[permissionId]
-    if (permission && permission.ps_level == 1) {
+    if (permission && permission.ps_level === 1) {
       parentPermissionResult = permissionsResult[permission.ps_pid]
       if (parentPermissionResult) {
         tmpResult[permission.ps_id] = {
@@ -44,10 +44,10 @@ function getPermissionsResult(permissionKeys, permissionIds) {
 
   // 处理三级菜单
   for (idx in permissionIds) {
-    if (!permissionIds[idx] || permissionIds[idx] == '') continue
+    if (!permissionIds[idx] || permissionIds[idx] === '') continue
     permissionId = parseInt(permissionIds[idx])
     permission = permissionKeys[permissionId]
-    if (permission && permission.ps_level == 2) {
+    if (permission && permission.ps_level === 2) {
       parentPermissionResult = tmpResult[permission.ps_pid]
 
       if (parentPermissionResult) {
@@ -70,7 +70,7 @@ function getPermissionsResult(permissionKeys, permissionIds) {
 module.exports.getAllRoles = function (cb) {
   dao.list('RoleModel', null, function (err, roles) {
     if (err) return cb('获取角色数据失败')
-    permissionAPIDAO.list(function (err, permissions) {
+    permissionApiDAO.list(function (err, permissions) {
       if (err) return cb('获取权限数据失败')
       var permissionKeys = _.keyBy(permissions, 'ps_id')
       var rolesResult = []
@@ -200,7 +200,7 @@ module.exports.deleteRoleRight = function (rid, deletedRightId, cb) {
     new_ps_ids = []
     for (idx in ps_ids) {
       ps_id = ps_ids[idx]
-      if (parseInt(deletedRightId) == parseInt(ps_id)) {
+      if (parseInt(deletedRightId) === parseInt(ps_id)) {
         continue
       }
       new_ps_ids.push(ps_id)
@@ -209,7 +209,7 @@ module.exports.deleteRoleRight = function (rid, deletedRightId, cb) {
     role.ps_ids = new_ps_ids_string
     role.save(function (err, newRole) {
       if (err) return cb('删除权限失败')
-      permissionAPIDAO.list(function (err, permissions) {
+      permissionApiDAO.list(function (err, permissions) {
         if (err) return cb('获取权限数据失败')
         permissionIds = newRole.ps_ids.split(',')
         var permissionKeys = _.keyBy(permissions, 'ps_id')
@@ -243,7 +243,7 @@ module.exports.deleteRole = function (id, cb) {
  * @param  {Function} cb          回调函数
  */
 module.exports.authRight = function (rid, serviceName, actionName, cb) {
-  permissionAPIDAO.authRight(rid, serviceName, actionName, function (err, pass) {
+  permissionApiDAO.authRight(rid, serviceName, actionName, function (err, pass) {
     cb(err, pass)
   })
 }

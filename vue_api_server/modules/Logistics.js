@@ -4,13 +4,13 @@ const request = require('request')
 // 自动匹配运单号所属的物流公司
 function autoComNumber(orderno) {
   const url = `https://www.kuaidi100.com/autonumber/autoComNum?resultv2=1&text=${orderno}`
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request(url, (err, response, body) => {
-      if (err) return reject({ status: 500, msg: err.message })
+      if (err) return reject(new Promise({ status: 500, msg: err.message }))
       // resolve(body)
       // console.log(body.num)
       body = JSON.parse(body)
-      if (body.auto.length <= 0) return reject({ status: 501, msg: '无对应的物流公司' })
+      if (body.auto.length <= 0) return reject(new Promise({ status: 501, msg: '无对应的物流公司' }))
       resolve({ status: 200, msg: body.auto[0], comCode: body.auto[0].comCode })
     })
   })

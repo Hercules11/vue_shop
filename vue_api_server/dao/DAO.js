@@ -121,14 +121,14 @@ module.exports.findOne = function (modelName, conditions, cb) {
 
   var Model = db.models[modelName]
 
-  if (!Model) return cb('模型不存在', null)
+  if (!Model) return cb(new Error('模型不存在'), null)
 
-  if (!conditions) return cb('条件为空', null)
+  if (!conditions) return cb(new Error('条件为空'), null)
 
   Model.one(conditions, function (err, obj) {
     logger.debug(err)
     if (err) {
-      return cb('查询失败', null)
+      return cb(new Error('查询失败'), null)
     }
     return cb(null, obj)
   })

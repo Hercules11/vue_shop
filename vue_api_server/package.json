@@ -28,6 +28,8 @@
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "serve-favicon": "~2.4.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "underscore": "^1.8.3",
     "uniqid": "^4.1.1"
   },

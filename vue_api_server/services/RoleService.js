@@ -69,9 +69,9 @@ function getPermissionsResult(permissionKeys, permissionIds) {
  */
 module.exports.getAllRoles = function (cb) {
   dao.list('RoleModel', null, function (err, roles) {
-    if (err) return cb('获取角色数据失败')
+    if (err) return cb(new Error('获取角色数据失败'))
     permissionApiDAO.list(function (err, permissions) {
-      if (err) return cb('获取权限数据失败')
+      if (err) return cb(new Error('获取权限数据失败'))
       var permissionKeys = _.keyBy(permissions, 'ps_id')
       var rolesResult = []
       for (idx in roles) {
@@ -101,11 +101,11 @@ module.exports.getAllRoles = function (cb) {
  * @param  {Function} cb     [description]
  */
 module.exports.createRole = function (params, cb) {
-  if (!params.roleName) return cb('角色名称不能为空')
+  if (!params.roleName) return cb(new Error('角色名称不能为空'))
   if (!params.roleDesc) params.roleDesc = ''
 
   dao.create('RoleModel', { role_name: params.roleName, role_desc: params.roleDesc, ps_ids: '' }, function (err, role) {
-    if (err) return cb('创建角色失败')
+    if (err) return cb(new Error('创建角色失败'))
     cb(null, {
       roleId: role.role_id,
       roleName: role.role_name,
@@ -121,10 +121,10 @@ module.exports.createRole = function (params, cb) {
  * @param  {Function} cb 回调函数
  */
 module.exports.getRoleById = function (id, cb) {
-  if (!id) return cb('角色ID不能为空')
-  if (isNaN(parseInt(id))) return cb('角色ID必须为数字')
+  if (!id) return cb(new Error('角色ID不能为空'))
+  if (isNaN(parseInt(id))) return cb(new Error('角色ID必须为数字'))
   dao.show('RoleModel', id, function (err, role) {
-    if (err) return cb('获取角色详情失败')
+    if (err) return cb(new Error('获取角色详情失败'))
     cb(null, {
       roleId: role.role_id,
       roleName: role.role_name,
@@ -141,9 +141,9 @@ module.exports.getRoleById = function (id, cb) {
  * @param  {Function} cb   回调函数
  */
 module.exports.updateRole = function (params, cb) {
-  if (!params) return cb('参数不能为空')
-  if (!params.id) return cb('角色ID不能为空')
-  if (isNaN(parseInt(params.id))) return cb('角色ID必须为数字')
+  if (!params) return cb(new Error('参数不能为空'))
+  if (!params.id) return cb(new Error('角色ID不能为空'))
+  if (isNaN(parseInt(params.id))) return cb(new Error('角色ID必须为数字'))
 
   updateInfo = {}
   if (params.roleName) {
@@ -154,7 +154,7 @@ module.exports.updateRole = function (params, cb) {
   }
 
   dao.update('RoleModel', params.id, updateInfo, function (err, newRole) {
-    if (err) return cb('更新角色信息失败')
+    if (err) return cb(new Error('更新角色信息失败'))
     cb(null, {
       roleId: newRole.role_id,
       roleName: newRole.role_name,
@@ -171,14 +171,14 @@ module.exports.updateRole = function (params, cb) {
  * @param  {Function} cb     回调函数
  */
 module.exports.updateRoleRight = function (rid, rights, cb) {
-  if (!rid) return cb('角色ID不能为空')
-  if (isNaN(parseInt(rid))) return cb('角色ID必须为数字')
+  if (!rid) return cb(new Error('角色ID不能为空'))
+  if (isNaN(parseInt(rid))) return cb(new Error('角色ID必须为数字'))
 
   // 注意这里需要更新权限描述信息字段
   // 暂时实现
   //
   dao.update('RoleModel', rid, { ps_ids: rights }, function (err, newRole) {
-    if (err) return cb('更新权限失败')
+    if (err) return cb(new Error('更新权限失败'))
     cb(null, {
       roleId: newRole.role_id,
       roleName: newRole.role_name
@@ -195,22 +195,22 @@ module.exports.updateRoleRight = function (rid, rights, cb) {
  */
 module.exports.deleteRoleRight = function (rid, deletedRightId, cb) {
   daoModule.findOne('RoleModel', { role_id: rid }, function (err, role) {
-    if (err || !role) return cb('获取角色信息失败', false)
-    ps_ids = role.ps_ids.split(',')
-    new_ps_ids = []
-    for (idx in ps_ids) {
-      ps_id = ps_ids[idx]
-      if (parseInt(deletedRightId) === parseInt(ps_id)) {
+    if (err || !role) return cb(new Error('获取角色信息失败'), false)
+    psIds = role.ps_ids.split(',')
+    newPsIds = []
+    for (idx in psIds) {
+      psId = ps_ids[idx]
+      if (parseInt(deletedRightId) === parseInt(psId)) {
         continue
       }
-      new_ps_ids.push(ps_id)
+      newPsIds.push(ps_id)
     }
-    new_ps_ids_string = new_ps_ids.join(',')
-    role.ps_ids = new_ps_ids_string
+    newPsIdsString = newPsIds.join(',')
+    role.ps_ids = newPsIdsString
     role.save(function (err, newRole) {
-      if (err) return cb('删除权限失败')
+      if (err) return cb(new Error('删除权限失败'))
       permissionApiDAO.list(function (err, permissions) {
-        if (err) return cb('获取权限数据失败')
+        if (err) return cb(new Error('获取权限数据失败'))
         permissionIds = newRole.ps_ids.split(',')
         var permissionKeys = _.keyBy(permissions, 'ps_id')
         return cb(null, _.values(getPermissionsResult(permissionKeys, permissionIds)))
@@ -226,10 +226,10 @@ module.exports.deleteRoleRight = function (rid, deletedRightId, cb) {
  * @param  {Function} cb 回调函数
  */
 module.exports.deleteRole = function (id, cb) {
-  if (!id) return cb('角色ID不能为空')
-  if (isNaN(parseInt(id))) return cb('角色ID必须为数字')
+  if (!id) return cb(new Error('角色ID不能为空'))
+  if (isNaN(parseInt(id))) return cb(new Error('角色ID必须为数字'))
   dao.destroy('RoleModel', id, function (err) {
-    if (err) return cb('删除失败')
+    if (err) return cb(new Error('删除失败'))
     cb(null, true)
   })
 }

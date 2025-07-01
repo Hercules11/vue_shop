@@ -4,7 +4,7 @@ var dao = require(path.join(process.cwd(), 'dao/DAO'))
 
 function reportOne(cb) {
   dao.list('ReportOneModel', null, function (err, result) {
-    if (err) return cb('获取报表数据失败')
+    if (err) return cb(new Error('获取报表数据失败'))
     var areaKeyResult = {}
     var areaKeys = _.union(_.map(result, 'rp1_area'))
     var dateKeys = _.union(_.map(result, function (record) {
@@ -64,7 +64,7 @@ function reportOne(cb) {
 
 function reportTwo(cb) {
   dao.list('ReportTwoModel', null, function (err, result) {
-    if (err) return cb('获取报表数据失败')
+    if (err) return cb(new Error('获取报表数据失败'))
     var dateKeyResult = {}
     for (var idx in result) {
       var record = result[idx]
@@ -114,7 +114,7 @@ module.exports.reports = function (typeid, cb) {
       })
       break
     default:
-      cb('类型出错')
+      cb(new Error('类型出错'))
       break
   }
 }

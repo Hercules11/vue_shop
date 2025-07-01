@@ -1,7 +1,7 @@
 var _ = require('lodash')
 var path = require('path')
 var dao = require(path.join(process.cwd(), 'dao/DAO'))
-var permissionAPIDAO = require(path.join(process.cwd(), 'dao/PermissionAPIDAO'))
+var permissionApiDAO = require(path.join(process.cwd(), 'dao/PermissionApiDAO'))
 
 /**
  * 获取左侧菜单数据
@@ -9,19 +9,19 @@ var permissionAPIDAO = require(path.join(process.cwd(), 'dao/PermissionAPIDAO'))
  * @param  {Function} cb 回调函数
  */
 module.exports.getLeftMenus = function (userInfo, cb) {
-  if (!userInfo) return cb('无权限访问')
+  if (!userInfo) return cb(new Error('无权限访问'))
 
   var authFn = function (rid, keyRolePermissions, cb) {
-    permissionAPIDAO.list(function (err, permissions) {
-      if (err) return cb('获取权限数据失败')
+    permissionApiDAO.list(function (err, permissions) {
+      if (err) return cb(new Error('获取权限数据失败'))
       var keyPermissions = _.keyBy(permissions, 'ps_id')
       var rootPermissionsResult = {}
       // 处理一级菜单
       for (idx in permissions) {
         permission = permissions[idx]
 
-        if (permission.ps_level == 0) {
-          if (rid != 0) {
+        if (permission.ps_level === '0') {
+          if (rid !== 0) {
             if (!keyRolePermissions[permission.ps_id]) continue
           }
           rootPermissionsResult[permission.ps_id] = {
@@ -37,8 +37,8 @@ module.exports.getLeftMenus = function (userInfo, cb) {
       // 处理二级菜单
       for (idx in permissions) {
         permission = permissions[idx]
-        if (permission.ps_level == 1) {
-          if (rid != 0) {
+        if (permission.ps_level === '1') {
+          if (rid !== 0) {
             if (!keyRolePermissions[permission.ps_id]) continue
           }
           parentPermissionResult = rootPermissionsResult[permission.ps_pid]
@@ -66,11 +66,11 @@ module.exports.getLeftMenus = function (userInfo, cb) {
   }
 
   rid = userInfo.rid
-  if (rid == 0) {
+  if (rid === 0) {
     authFn(rid, null, cb)
   } else {
     dao.show('RoleModel', userInfo.rid, function (err, role) {
-      if (err || !role) return cb('无权限访问')
+      if (err || !role) return cb(new Error('无权限访问'))
 
       rolePermissions = role.ps_ids.split(',')
       keyRolePermissions = {}

@@ -23,6 +23,19 @@ if (process.env.NODE_ENV !== 'production') {
           url: 'http://localhost:8888',
           description: 'Development server'
         }
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer'
+          }
+        }
+      },
+      security: [
+        {
+          bearerAuth: [] // 使用 bearerAuth 安全方案
+        }
       ]
     },
     apis: ['./routes/api/private/v1/*.js'] // files containing annotations as above

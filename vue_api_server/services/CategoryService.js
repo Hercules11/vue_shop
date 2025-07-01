@@ -10,7 +10,7 @@ var dao = require(path.join(process.cwd(), 'dao/DAO'))
  * @return {Boolean}               [description]
  */
 function isDelete(keyCategories, cat) {
-  if (cat.cat_pid == 0) {
+  if (cat.cat_pid === 0) {
     return cat.cat_deleted
   } else if (cat.cat_deleted) {
     return true
@@ -32,7 +32,7 @@ function getTreeResult(keyCategories, categories, type) {
     var cat = categories[idx]
     // 判断是否被删除
     if (isDelete(keyCategories, cat)) continue
-    if (cat.cat_pid == 0) {
+    if (cat.cat_pid === 0) {
       result.push(cat)
     } else {
       if (cat.cat_level >= type) continue
@@ -56,6 +56,7 @@ function getTreeResult(keyCategories, categories, type) {
  */
 module.exports.getAllCategories = function (type, conditions, cb) {
   dao.list('CategoryModel', { cat_deleted: false }, function (err, categories) {
+    if (err) return cb(new Error('获取分类列表失败'))
     var keyCategories = _.keyBy(categories, 'cat_id')
     if (!type) type = 3
 
@@ -85,7 +86,7 @@ module.exports.getAllCategories = function (type, conditions, cb) {
  */
 module.exports.getCategoryById = function (id, cb) {
   dao.show('CategoryModel', id, function (err, category) {
-    if (err) return cb('获取分类对象失败')
+    if (err) return cb(new Error('获取分类对象失败'))
     cb(null, category)
   })
 }
@@ -104,7 +105,7 @@ module.exports.getCategoryById = function (id, cb) {
  */
 module.exports.addCategory = function (cat, cb) {
   dao.create('CategoryModel', { cat_pid: cat.cat_pid, cat_name: cat.cat_name, cat_level: cat.cat_level }, function (err, newCat) {
-    if (err) return cb('创建分类失败')
+    if (err) return cb(new Error('创建分类失败'))
     cb(null, newCat)
   })
 }
@@ -112,13 +113,13 @@ module.exports.addCategory = function (cat, cb) {
 /**
  * 更新分类
  *
- * @param  {[type]}   cat_id  分类ID
+ * @param  {[type]}   catId  分类ID
  * @param  {[type]}   newName 新的名称
  * @param  {Function} cb      回调函数
  */
-module.exports.updateCategory = function (cat_id, newName, cb) {
-  dao.update('CategoryModel', cat_id, { cat_name: newName }, function (err, newCat) {
-    if (err) return cb('更新失败')
+module.exports.updateCategory = function (catId, newName, cb) {
+  dao.update('CategoryModel', catId, { cat_name: newName }, function (err, newCat) {
+    if (err) return cb(new Error('更新失败'))
     cb(null, newCat)
   })
 }
@@ -126,12 +127,12 @@ module.exports.updateCategory = function (cat_id, newName, cb) {
 /**
  * 删除分类
  *
- * @param  {[type]}   cat_id 分类ID
+ * @param  {[type]}   catId 分类ID
  * @param  {Function} cb     回调函数
  */
-module.exports.deleteCategory = function (cat_id, cb) {
-  dao.update('CategoryModel', cat_id, { cat_deleted: true }, function (err, newCat) {
-    if (err) return cb('删除失败')
-    cb('删除成功')
+module.exports.deleteCategory = function (catId, cb) {
+  dao.update('CategoryModel', catId, { cat_deleted: true }, function (err, newCat) {
+    if (err) return cb(new Error('删除失败'))
+    cb(new Error('删除成功'))
   })
 }

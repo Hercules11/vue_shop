@@ -52,13 +52,13 @@ module.exports.findByKey = function (key, offset, limit, cb) {
     database.driver.execQuery(
       sql
       , ['%' + key + '%', offset, limit], function (err, managers) {
-        if (err) return cb('查询执行出错')
+        if (err) return cb(new Error('查询执行出错'))
         cb(null, managers)
       })
   } else {
     sql += ' LIMIT ?,? '
     database.driver.execQuery(sql, [offset, limit], function (err, managers) {
-      if (err) return cb('查询执行出错')
+      if (err) return cb(new Error('查询执行出错'))
       cb(null, managers)
     })
   }
@@ -75,7 +75,7 @@ module.exports.exists = function (username, cb) {
   var db = databaseModule.getDatabase()
   var Model = db.models.ManagerModel
   Model.exists({ mg_name: username }, function (err, isExists) {
-    if (err) return cb('查询失败')
+    if (err) return cb(new Error('查询失败'))
     cb(null, isExists)
   })
 }
@@ -94,12 +94,12 @@ module.exports.countByKey = function (key, cb) {
     database.driver.execQuery(
       sql
       , ['%' + key + '%'], function (err, result) {
-        if (err) return cb('查询执行出错')
+        if (err) return cb(new Error('查询执行出错'))
         cb(null, result[0].count)
       })
   } else {
     database.driver.execQuery(sql, function (err, result) {
-      if (err) return cb('查询执行出错')
+      if (err) return cb(new Error('查询执行出错'))
       cb(null, result[0].count)
     })
   }

@@ -8,7 +8,7 @@ var fs = require('fs')
 
 var gm = require('gm')
 var uniqid = require('uniqid')
-var upload_config = require('config').get('upload_config')
+var uploadConfig = require('config').get('upload_config')
 /**
  * 裁剪图片
  *
@@ -53,20 +53,20 @@ function generateGoodInfo(params) {
   return new Promise(function (resolve, reject) {
     var info = {}
     if (params.goods_id) info.goods_id = params.goods_id
-    if (!params.goods_name) return reject('商品名称不能为空')
+    if (!params.goods_name) return reject(new Promise('商品名称不能为空'))
     info.goods_name = params.goods_name
 
-    if (!params.goods_price) return reject('商品价格不能为空')
+    if (!params.goods_price) return reject(new Promise('商品价格不能为空'))
     var price = parseFloat(params.goods_price)
-    if (isNaN(price) || price < 0) return reject('商品价格不正确')
+    if (isNaN(price) || price < 0) return reject(new Promise('商品价格不正确'))
     info.goods_price = price
 
-    if (!params.goods_number) return reject('商品数量不能为空')
+    if (!params.goods_number) return reject(new Promise('商品数量不能为空'))
     var num = parseInt(params.goods_number)
-    if (isNaN(num) || num < 0) return reject('商品数量不正确')
+    if (isNaN(num) || num < 0) return reject(new Promise('商品数量不正确'))
     info.goods_number = num
 
-    if (!params.goods_cat) return reject('商品没有设置所属分类')
+    if (!params.goods_cat) return reject(new Promise('商品没有设置所属分类'))
     var cats = params.goods_cat.split(',')
     if (cats.length > 0) {
       info.cat_one_id = cats[0]
@@ -81,7 +81,7 @@ function generateGoodInfo(params) {
 
     if (params.goods_weight) {
       weight = parseFloat(params.goods_weight)
-      if (isNaN(weight) || weight < 0) return reject('商品重量格式不正确')
+      if (isNaN(weight) || weight < 0) return reject(new Promise('商品重量格式不正确'))
       info.goods_weight = weight
     } else {
       info.goods_weight = 0
@@ -121,9 +121,9 @@ function generateGoodInfo(params) {
     info.is_del = '0'
 
     if (params.hot_mumber) {
-      hot_num = parseInt(params.hot_mumber)
-      if (isNaN(hot_num) || hot_num < 0) return reject('热销品数量格式不正确')
-      info.hot_mumber = hot_num
+      hotNum = parseInt(params.hot_mumber)
+      if (isNaN(hotNum) || hotNum < 0) return reject(new Promise('热销品数量格式不正确'))
+      info.hot_mumber = hotNum
     } else {
       info.hot_mumber = 0
     }
@@ -145,8 +145,8 @@ function checkGoodName(info) {
     dao.findOne('GoodModel', { goods_name: info.goods_name, is_del: '0' }, function (err, good) {
       if (err) return reject(err)
       if (!good) return resolve(info)
-      if (good.goods_id == info.goods_id) return resolve(info)
-      return reject('商品名称已存在')
+      if (good.goods_id === info.goods_id) return resolve(info)
+      return reject(new Promise('商品名称已存在'))
     })
   })
 }
@@ -160,7 +160,7 @@ function checkGoodName(info) {
 function createGoodInfo(info) {
   return new Promise(function (resolve, reject) {
     dao.create('GoodModel', _.clone(info), function (err, newGood) {
-      if (err) return reject('创建商品基本信息失败')
+      if (err) return reject(new Promise('创建商品基本信息失败'))
       newGood.goods_cat = newGood.getGoodsCat()
       info.good = newGood
       return resolve(info)
@@ -170,9 +170,9 @@ function createGoodInfo(info) {
 
 function updateGoodInfo(info) {
   return new Promise(function (resolve, reject) {
-    if (!info.goods_id) return reject('商品ID不存在')
+    if (!info.goods_id) return reject(new Promise('商品ID不存在'))
     dao.update('GoodModel', info.goods_id, _.clone(info), function (err, newGood) {
-      if (err) return reject('更新商品基本信息失败')
+      if (err) return reject(new Promise('更新商品基本信息失败'))
       info.good = newGood
       return resolve(info)
     })
@@ -187,10 +187,10 @@ function updateGoodInfo(info) {
  */
 function getGoodInfo(info) {
   return new Promise(function (resolve, reject) {
-    if (!info || !info.goods_id || isNaN(info.goods_id)) return reject('商品ID格式不正确')
+    if (!info || !info.goods_id || isNaN(info.goods_id)) return reject(new Promise('商品ID格式不正确'))
 
     dao.show('GoodModel', info.goods_id, function (err, good) {
-      if (err) return reject('获取商品基本信息失败')
+      if (err) return reject(new Promise('获取商品基本信息失败'))
       good.goods_cat = good.getGoodsCat()
       info.good = good
       return resolve(info)
@@ -206,9 +206,9 @@ function getGoodInfo(info) {
  */
 function removeGoodPic(pic) {
   return new Promise(function (resolve, reject) {
-    if (!pic || !pic.remove) return reject('删除商品图片记录失败')
+    if (!pic || !pic.remove) return reject(new Promise('删除商品图片记录失败'))
     pic.remove(function (err) {
-      if (err) return reject('删除失败')
+      if (err) return reject(new Promise('删除失败'))
       resolve()
     })
   })
@@ -217,6 +217,9 @@ function removeGoodPic(pic) {
 function removeGoodPicFile(path) {
   return new Promise(function (resolve, reject) {
     fs.unlink(path, function (err, result) {
+      if (err) {
+        return reject(err)
+      }
       resolve()
     })
   })
@@ -224,10 +227,10 @@ function removeGoodPicFile(path) {
 
 function createGoodPic(pic) {
   return new Promise(function (resolve, reject) {
-    if (!pic) return reject('图片对象不能为空')
+    if (!pic) return reject(new Promise('图片对象不能为空'))
     var GoodPicModel = dao.getModel('GoodPicModel')
     GoodPicModel.create(pic, function (err, newPic) {
-      if (err) return reject('创建图片数据失败')
+      if (err) return reject(new Promise('创建图片数据失败'))
       resolve()
     })
   })
@@ -242,11 +245,11 @@ function createGoodPic(pic) {
 function doUpdateGoodPics(info) {
   return new Promise(function (resolve, reject) {
     var good = info.good
-    if (!good.goods_id) return reject('更新商品图片失败')
+    if (!good.goods_id) return reject(new Promise('更新商品图片失败'))
 
     if (!info.pics) return resolve(info)
     dao.list('GoodPicModel', { columns: { goods_id: good.goods_id } }, function (err, oldpics) {
-      if (err) return reject('获取商品图片列表失败')
+      if (err) return reject(new Promise('获取商品图片列表失败'))
 
       var batchFns = []
 
@@ -312,7 +315,7 @@ function doUpdateGoodPics(info) {
       })
 
       // 如果没有任何图片操作就返回
-      if (batchFns.length == 0) {
+      if (batchFns.length === 0) {
         return resolve(info)
       }
 
@@ -331,7 +334,7 @@ function doUpdateGoodPics(info) {
 function createGoodAttribute(goodAttribute) {
   return new Promise(function (resolve, reject) {
     dao.create('GoodAttributeModel', _.omit(goodAttribute, 'delete_time'), function (err, newAttr) {
-      if (err) return reject('创建商品参数失败')
+      if (err) return reject(new Promise('创建商品参数失败'))
       resolve(newAttr)
     })
   })
@@ -346,11 +349,11 @@ function createGoodAttribute(goodAttribute) {
 function doUpdateGoodAttributes(info) {
   return new Promise(function (resolve, reject) {
     var good = info.good
-    if (!good.goods_id) return reject('获取商品图片必须先获取商品信息')
+    if (!good.goods_id) return reject(new Promise('获取商品图片必须先获取商品信息'))
     if (!info.attrs) return resolve(info)
     // var GoodAttributeModel = dao.getModel("GoodAttributeModel");
     goodAttributeDao.clearGoodAttributes(good.goods_id, function (err) {
-      if (err) return reject('清理原始的商品参数失败')
+      if (err) return reject(new Promise('清理原始的商品参数失败'))
 
       var newAttrs = info.attrs ? info.attrs : []
 
@@ -362,14 +365,14 @@ function doUpdateGoodAttributes(info) {
             if (newattr.attr_value instanceof Array) {
               newattr.attr_value = newattr.attr_value.join(',')
             } else {
-              newattr.attr_value = newattr.attr_value
+              // newattr.attr_value = newattr.attr_value
             }
           } else { newattr.attr_value = '' }
           createFns.push(createGoodAttribute(_.clone(newattr)))
         })
       }
 
-      if (createFns.length == 0) return resolve(info)
+      if (createFns.length === 0) return resolve(info)
 
       Promise.all(createFns)
         .then(function () {
@@ -391,30 +394,30 @@ function doUpdateGoodAttributes(info) {
 function doGetAllPics(info) {
   return new Promise(function (resolve, reject) {
     var good = info.good
-    if (!good.goods_id) return reject('获取商品图片必须先获取商品信息')
+    if (!good.goods_id) return reject(new Promise('获取商品图片必须先获取商品信息'))
     // 3. 组装最新的数据挂载在“info”中“good”对象下
     dao.list('GoodPicModel', { columns: { goods_id: good.goods_id } }, function (err, goodPics) {
-      if (err) return reject('获取所有商品图片列表失败')
+      if (err) return reject(new Promise('获取所有商品图片列表失败'))
       _(goodPics).forEach(function (pic) {
-        if (pic.pics_big.indexOf('http') == 0) {
+        if (pic.pics_big.indexOf('http') === 0) {
           pic.pics_big_url = pic.pics_big
         } else {
-          pic.pics_big_url = upload_config.get('baseURL') + pic.pics_big
+          pic.pics_big_url = uploadConfig.get('baseURL') + pic.pics_big
         }
 
-        if (pic.pics_mid.indexOf('http') == 0) {
+        if (pic.pics_mid.indexOf('http') === 0) {
           pic.pics_mid_url = pic.pics_mid
         } else {
-          pic.pics_mid_url = upload_config.get('baseURL') + pic.pics_mid
+          pic.pics_mid_url = uploadConfig.get('baseURL') + pic.pics_mid
         }
-        if (pic.pics_sma.indexOf('http') == 0) {
+        if (pic.pics_sma.indexOf('http') === 0) {
           pic.pics_sma_url = pic.pics_sma
         } else {
-          pic.pics_sma_url = upload_config.get('baseURL') + pic.pics_sma
+          pic.pics_sma_url = uploadConfig.get('baseURL') + pic.pics_sma
         }
 
-        // pic.pics_mid_url = upload_config.get("baseURL") + pic.pics_mid;
-        // pic.pics_sma_url = upload_config.get("baseURL") + pic.pics_sma;
+        // pic.pics_mid_url = uploadConfig.get("baseURL") + pic.pics_mid;
+        // pic.pics_sma_url = uploadConfig.get("baseURL") + pic.pics_sma;
       })
       info.good.pics = goodPics
       resolve(info)
@@ -430,9 +433,9 @@ function doGetAllPics(info) {
 function doGetAllAttrs(info) {
   return new Promise(function (resolve, reject) {
     var good = info.good
-    if (!good.goods_id) return reject('获取商品图片必须先获取商品信息')
+    if (!good.goods_id) return reject(new Promise('获取商品图片必须先获取商品信息'))
     goodAttributeDao.list(good.goods_id, function (err, goodAttrs) {
-      if (err) return reject('获取所有商品参数列表失败')
+      if (err) return reject(new Promise('获取所有商品参数列表失败'))
       info.good.attrs = goodAttrs
       resolve(info)
     })
@@ -474,8 +477,8 @@ module.exports.createGood = function (params, cb) {
  * @param  {Function} cb 回调函数
  */
 module.exports.deleteGood = function (id, cb) {
-  if (!id) return cb('产品ID不能为空')
-  if (isNaN(id)) return cb('产品ID必须为数字')
+  if (!id) return cb(new Error('产品ID不能为空'))
+  if (isNaN(id)) return cb(new Error('产品ID必须为数字'))
   dao.update(
     'GoodModel',
     id,
@@ -499,8 +502,8 @@ module.exports.deleteGood = function (id, cb) {
  */
 module.exports.getAllGoods = function (params, cb) {
   var conditions = {}
-  if (!params.pagenum || params.pagenum <= 0) return cb('pagenum 参数错误')
-  if (!params.pagesize || params.pagesize <= 0) return cb('pagesize 参数错误')
+  if (!params.pagenum || params.pagenum <= 0) return cb(new Error('pagenum 参数错误'))
+  if (!params.pagesize || params.pagesize <= 0) return cb(new Error('pagesize 参数错误'))
 
   conditions.columns = {}
   if (params.query) {
@@ -571,15 +574,15 @@ module.exports.updateGood = function (id, params, cb) {
 /**
  * 更新商品图片
  *
- * @param  {[type]}   goods_id 商品ID
+ * @param  {[type]}   goodsId 商品ID
  * @param  {[type]}   pics     商品图片
  * @param  {Function} cb       回调函数
  */
-module.exports.updateGoodPics = function (goods_id, pics, cb) {
-  if (!goods_id) return cb('商品ID不能为空')
-  if (isNaN(goods_id)) return cb('商品ID必须为数字')
+module.exports.updateGoodPics = function (goodsId, pics, cb) {
+  if (!goodsId) return cb(new Error('商品ID不能为空'))
+  if (isNaN(goodsId)) return cb(new Error('商品ID必须为数字'))
 
-  getGoodInfo({ goods_id: goods_id, pics: pics })
+  getGoodInfo({ goods_id: goodsId, pics: pics })
     .then(doUpdateGoodPics)
     .then(doGetAllPics)
     .then(doGetAllAttrs)
@@ -591,8 +594,8 @@ module.exports.updateGoodPics = function (goods_id, pics, cb) {
     })
 }
 
-module.exports.updateGoodAttributes = function (goods_id, attrs, cb) {
-  getGoodInfo({ goods_id: goods_id, attrs: attrs })
+module.exports.updateGoodAttributes = function (goodsId, attrs, cb) {
+  getGoodInfo({ goods_id: goodsId, attrs: attrs })
     .then(doUpdateGoodAttributes)
     .then(doGetAllPics)
     .then(doGetAllAttrs)
@@ -604,8 +607,8 @@ module.exports.updateGoodAttributes = function (goods_id, attrs, cb) {
     })
 }
 
-module.exports.updateGoodsState = function (goods_id, state, cb) {
-  getGoodInfo({ goods_id: goods_id, goods_state: state })
+module.exports.updateGoodsState = function (goodsId, state, cb) {
+  getGoodInfo({ goods_id: goodsId, goods_state: state })
     .then(updateGoodInfo)
     .then(doGetAllPics)
     .then(doGetAllAttrs)

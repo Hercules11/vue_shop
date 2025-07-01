@@ -16,11 +16,12 @@ var logger = require('../modules/logger').logger()
  * @param  {Function} cb         回调函数
  */
 module.exports.getAllManagers = function (conditions, cb) {
-  if (!conditions.pagenum) return cb('pagenum 参数不合法')
-  if (!conditions.pagesize) return cb('pagesize 参数不合法')
+  if (!conditions.pagenum) return cb(new Error('pagenum 参数不合法'))
+  if (!conditions.pagesize) return cb(new Error('pagesize 参数不合法'))
 
   // 通过关键词获取管理员数量
   managersDAO.countByKey(conditions.query, function (err, count) {
+    if (err) return cb(err)
     key = conditions.query
     pagenum = parseInt(conditions.pagenum)
     pagesize = parseInt(conditions.pagesize)
@@ -36,18 +37,18 @@ module.exports.getAllManagers = function (conditions, cb) {
       var retManagers = []
       for (idx in managers) {
         var manager = managers[idx]
-        var role_name = manager.role_name
+        var roleName = manager.role_name
         if (!manager.role_id) {
-          role_name = '超级管理员'
+          roleName = '超级管理员'
         }
         retManagers.push({
           id: manager.mg_id,
-          role_name: role_name,
+          role_name: roleName,
           username: manager.mg_name,
           create_time: manager.mg_time,
           mobile: manager.mg_mobile,
           email: manager.mg_email,
-          mg_state: manager.mg_state == 1
+          mg_state: manager.mg_state === 1
         })
       }
       var resultDta = {}
@@ -70,7 +71,7 @@ module.exports.createManager = function (params, cb) {
     if (err) return cb(err)
 
     if (isExists) {
-      return cb('用户名已存在')
+      return cb(new Error('用户名已存在'))
     }
 
     managersDAO.create({
@@ -81,7 +82,7 @@ module.exports.createManager = function (params, cb) {
       mg_time: (Date.parse(new Date()) / 1000),
       role_id: params.rid
     }, function (err, manager) {
-      if (err) return cb('创建失败')
+      if (err) return cb(new Error('创建失败'))
       result = {
         id: manager.mg_id,
         username: manager.mg_name,
@@ -130,7 +131,7 @@ module.exports.updateManager = function (params, cb) {
 module.exports.getManager = function (id, cb) {
   managersDAO.show(id, function (err, manager) {
     if (err) return cb(err)
-    if (!manager) return cb('该管理员不存在')
+    if (!manager) return cb(new Error('该管理员不存在'))
     cb(
       null,
       {
@@ -152,7 +153,7 @@ module.exports.getManager = function (id, cb) {
  */
 module.exports.deleteManager = function (id, cb) {
   managersDAO.destroy(id, function (err) {
-    if (err) return cb('删除失败')
+    if (err) return cb(new Error('删除失败'))
     cb(null)
   })
 }
@@ -166,10 +167,10 @@ module.exports.deleteManager = function (id, cb) {
  */
 module.exports.setRole = function (id, rid, cb) {
   managersDAO.show(id, function (err, manager) {
-    if (err || !manager) cb('管理员ID不存在')
+    if (err || !manager) cb(new Error('管理员ID不存在'))
 
     managersDAO.update({ mg_id: manager.mg_id, role_id: rid }, function (err, manager) {
-      if (err) return cb('设置失败')
+      if (err) return cb(new Error('设置失败'))
       cb(null, {
         id: manager.mg_id,
         rid: manager.role_id,
@@ -183,10 +184,10 @@ module.exports.setRole = function (id, rid, cb) {
 
 module.exports.updateMgrState = function (id, state, cb) {
   managersDAO.show(id, function (err, manager) {
-    if (err || !manager) cb('管理员ID不存在')
+    if (err || !manager) cb(new Error('管理员ID不存在'))
 
     managersDAO.update({ mg_id: manager.mg_id, mg_state: state }, function (err, manager) {
-      if (err) return cb('设置失败')
+      if (err) return cb(new Error('设置失败'))
       cb(null, {
         id: manager.mg_id,
         rid: manager.role_id,

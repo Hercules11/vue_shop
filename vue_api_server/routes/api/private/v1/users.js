@@ -15,6 +15,27 @@ var mgrServ = authorization.getService('ManagerService')
  *   get:
  *     summary: 获取所有用户列表
  *     tags: [Users]
+ *     security:
+ *      - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: pagenum
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 页码
+ *       - in: query
+ *         name: pagesize
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 每页数量
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: 查询关键字
  *     responses:
  *       "200":
  *         description: 成功获取用户列表

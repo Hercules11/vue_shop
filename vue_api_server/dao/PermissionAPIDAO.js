@@ -11,7 +11,7 @@ module.exports.list = function (cb) {
   db = databaseModule.getDatabase()
   sql = 'SELECT * FROM sp_permission_api as api LEFT JOIN sp_permission as main ON main.ps_id = api.ps_id WHERE main.ps_id is not null'
   database.driver.execQuery(sql, function (err, result) {
-    if (err) return cb('获取权限列表失败', null)
+    if (err) return cb(new Error('获取权限列表失败'), null)
     cb(null, result)
   })
 }

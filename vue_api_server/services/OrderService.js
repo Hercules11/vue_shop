@@ -12,15 +12,15 @@ function doCheckOrderParams(params) {
     if (params.order_id) info.order_id = params.order_id
 
     if (!params.order_id) {
-      if (!params.user_id) return reject('用户ID不能为空')
-      if (isNaN(parseInt(params.user_id))) return reject('用户ID必须是数字')
+      if (!params.user_id) return reject(new Promise('用户ID不能为空'))
+      if (isNaN(parseInt(params.user_id))) return reject(new Promise('用户ID必须是数字'))
       info.user_id = params.user_id
     }
 
     if (!params.order_id) info.order_number = 'itcast-' + uniqid()
 
-    if (!params.order_price) return reject('订单价格不能为空')
-    if (isNaN(parseFloat(params.order_price))) return reject('订单价格必须为数字')
+    if (!params.order_price) return reject(new Promise('订单价格不能为空'))
+    if (isNaN(parseFloat(params.order_price))) return reject(new Promise('订单价格必须为数字'))
     info.order_price = params.order_price
 
     if (params.order_pay) {
@@ -29,7 +29,7 @@ function doCheckOrderParams(params) {
       info.order_pay = '0'
     }
     if (params.is_send) {
-      if (params.is_send == 1) {
+      if (params.is_send === 1) {
         info.is_send = '是'
       } else {
         info.is_send = '否'
@@ -45,7 +45,7 @@ function doCheckOrderParams(params) {
     }
 
     if (params.order_fapiao_title) {
-      if (params.order_fapiao_title != '个人' && params.order_fapiao_title != '公司') { return reject('发票抬头必须是 个人 或 公司') }
+      if (params.order_fapiao_title !== '个人' && params.order_fapiao_title !== '公司') { return reject(new Promise('发票抬头必须是 个人 或 公司')) }
       info.order_fapiao_title = params.order_fapiao_title
     } else {
       info.order_fapiao_title = '个人'
@@ -84,7 +84,7 @@ function doCheckOrderParams(params) {
 function doCreateOrder(info) {
   return new Promise(function (resolve, reject) {
     dao.create('OrderModel', _.clone(info), function (err, newOrder) {
-      if (err) return reject('创建订单失败')
+      if (err) return reject(new Promise('创建订单失败'))
       info.order = newOrder
       resolve(info)
     })
@@ -94,7 +94,7 @@ function doCreateOrder(info) {
 function doCreateOrderGood(orderGood) {
   return new Promise(function (resolve, reject) {
     dao.create('OrderGoodModel', orderGood, function (err, newOrderGood) {
-      if (err) return reject('创建订单商品失败')
+      if (err) return reject(new Promise('创建订单商品失败'))
       resolve(newOrderGood)
     })
   })
@@ -102,17 +102,17 @@ function doCreateOrderGood(orderGood) {
 
 function doAddOrderGoods(info) {
   return new Promise(function (resolve, reject) {
-    if (!info.order) return reject('订单对象未创建')
+    if (!info.order) return reject(new Promise('订单对象未创建'))
 
     var orderGoods = info.goods
 
     if (orderGoods && orderGoods.length > 0) {
       var fns = []
-      var goods_total_price = _.sum(_.map(orderGoods, 'goods_price'))
+      var goodsTotalPrice = _.sum(_.map(orderGoods, 'goods_price'))
 
       _(orderGoods).forEach(function (orderGood) {
         orderGood.order_id = info.order.order_id
-        orderGood.goods_total_price = goods_total_price
+        orderGood.goods_total_price = goodsTotalPrice
         fns.push(doCreateOrderGood(orderGood))
       })
       Promise.all(fns)
@@ -131,10 +131,10 @@ function doAddOrderGoods(info) {
 
 function doGetAllOrderGoods(info) {
   return new Promise(function (resolve, reject) {
-    if (!info.order) return reject('订单对象未创建')
+    if (!info.order) return reject(new Promise('订单对象未创建'))
 
     dao.list('OrderGoodModel', { columns: { order_id: info.order.order_id } }, function (err, orderGoods) {
-      if (err) return reject('获取订单商品列表失败')
+      if (err) return reject(new Promise('获取订单商品列表失败'))
 
       info.order.goods = orderGoods
       resolve(info)
@@ -145,8 +145,8 @@ function doGetAllOrderGoods(info) {
 function doGetOrder(info) {
   return new Promise(function (resolve, reject) {
     dao.show('OrderModel', info.order_id, function (err, newOrder) {
-      if (err) return reject('获取订单详情失败')
-      if (!newOrder) return reject('订单ID不能存在')
+      if (err) return reject(new Promise('获取订单详情失败'))
+      if (!newOrder) return reject(new Promise('订单ID不能存在'))
       info.order = newOrder
       resolve(info)
     })
@@ -156,7 +156,7 @@ function doGetOrder(info) {
 function doUpdateOrder(info) {
   return new Promise(function (resolve, reject) {
     dao.update('OrderModel', info.order_id, _.clone(info), function (err, newOrder) {
-      if (err) return reject('更新失败')
+      if (err) return reject(new Promise('更新失败'))
       info.order = newOrder
       resolve(info)
     })
@@ -177,8 +177,8 @@ module.exports.createOrder = function (params, cb) {
 
 module.exports.getAllOrders = function (params, cb) {
   var conditions = {}
-  if (!params.pagenum || params.pagenum <= 0) return cb('pagenum 参数错误')
-  if (!params.pagesize || params.pagesize <= 0) return cb('pagesize 参数错误')
+  if (!params.pagenum || params.pagenum <= 0) return cb(new Error('pagenum 参数错误'))
+  if (!params.pagesize || params.pagesize <= 0) return cb(new Error('pagesize 参数错误'))
   conditions.columns = {}
   if (params.user_id) {
     conditions.columns.user_id = params.user_id
@@ -189,7 +189,7 @@ module.exports.getAllOrders = function (params, cb) {
   }
 
   if (params.is_send) {
-    if (params.is_send == 1) {
+    if (params.is_send === 1) {
       conditions.columns.is_send = '是'
     } else {
       conditions.columns.is_send = '否'
@@ -197,7 +197,7 @@ module.exports.getAllOrders = function (params, cb) {
   }
 
   if (params.order_fapiao_title) {
-    if (params.order_fapiao_title == 1) {
+    if (params.order_fapiao_title === 1) {
       conditions.columns.order_fapiao_title = '个人'
     } else {
       conditions.columns.order_fapiao_title = '公司'
@@ -247,8 +247,8 @@ module.exports.getAllOrders = function (params, cb) {
 }
 
 module.exports.getOrder = function (orderId, cb) {
-  if (!orderId) return cb('用户ID不能为空')
-  if (isNaN(parseInt(orderId))) return cb('用户ID必须是数字')
+  if (!orderId) return cb(new Error('用户ID不能为空'))
+  if (isNaN(parseInt(orderId))) return cb(new Error('用户ID必须是数字'))
 
   doGetOrder({ order_id: orderId })
     .then(doGetAllOrderGoods)
@@ -261,8 +261,8 @@ module.exports.getOrder = function (orderId, cb) {
 }
 
 module.exports.updateOrder = function (orderId, params, cb) {
-  if (!orderId) return cb('用户ID不能为空')
-  if (isNaN(parseInt(orderId))) return cb('用户ID必须是数字')
+  if (!orderId) return cb(new Error('用户ID不能为空'))
+  if (isNaN(parseInt(orderId))) return cb(new Error('用户ID必须是数字'))
   params.order_id = orderId
   doCheckOrderParams(params)
     .then(doUpdateOrder)

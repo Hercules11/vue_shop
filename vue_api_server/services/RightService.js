@@ -4,14 +4,14 @@ var dao = require(path.join(process.cwd(), 'dao/PermissionAPIDAO'))
 
 // 获取所有权限
 module.exports.getAllRights = function (type, cb) {
-  if (!type || (type != 'list' && type != 'tree')) {
-    cb('参数类型错误')
+  if (!type || (type !== 'list' && type !== 'tree')) {
+    cb(new Error('参数类型错误'))
   }
 
   dao.list(function (err, permissions) {
-    if (err) return cb('获取权限数据失败')
+    if (err) return cb(new Error('获取权限数据失败'))
 
-    if (type == 'list') {
+    if (type === 'list') {
       var result = []
       for (idx in permissions) {
         permission = permissions[idx]
@@ -33,7 +33,7 @@ module.exports.getAllRights = function (type, cb) {
       // 处理一级菜单
       for (idx in permissions) {
         permission = permissions[idx]
-        if (permission && permission.ps_level == 0) {
+        if (permission && permission.ps_level === 0) {
           permissionsResult[permission.ps_id] = {
             id: permission.ps_id,
             authName: permission.ps_name,
@@ -49,7 +49,7 @@ module.exports.getAllRights = function (type, cb) {
       // 处理二级菜单
       for (idx in permissions) {
         permission = permissions[idx]
-        if (permission && permission.ps_level == 1) {
+        if (permission && permission.ps_level === 1) {
           parentPermissionResult = permissionsResult[permission.ps_pid]
           if (parentPermissionResult) {
             tmpResult[permission.ps_id] = {
@@ -67,7 +67,7 @@ module.exports.getAllRights = function (type, cb) {
       // 处理三级菜单
       for (idx in permissions) {
         permission = permissions[idx]
-        if (permission && permission.ps_level == 2) {
+        if (permission && permission.ps_level === 2) {
           parentPermissionResult = tmpResult[permission.ps_pid]
 
           if (parentPermissionResult) {

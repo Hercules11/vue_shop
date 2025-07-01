@@ -44,7 +44,7 @@ module.exports.list = function (modelName, conditions, cb) {
 
   var model = db.models[modelName]
 
-  if (!model) return cb('模型不存在', null)
+  if (!model) return cb(new Error('模型不存在'), null)
 
   if (conditions) {
     if (conditions.columns) {
@@ -79,7 +79,7 @@ module.exports.list = function (modelName, conditions, cb) {
   model.run(function (err, models) {
     if (err) {
       console.log(err)
-      return cb('查询失败', null)
+      return cb(new Error('查询失败'), null)
     }
     cb(null, models)
   })
@@ -90,11 +90,11 @@ module.exports.countByConditions = function (modelName, conditions, cb) {
 
   var model = db.models[modelName]
 
-  if (!model) return cb('模型不存在', null)
+  if (!model) return cb(new Error('模型不存在'), null)
 
   var resultCB = function (err, count) {
     if (err) {
-      return cb('查询失败', null)
+      return cb(new Error('查询失败'), null)
     }
     cb(null, count)
   }
@@ -146,7 +146,7 @@ module.exports.update = function (modelName, id, updateObj, cb) {
   var db = databaseModule.getDatabase()
   var Model = db.models[modelName]
   Model.get(id, function (err, obj) {
-    if (err) return cb('更新失败', null)
+    if (err) return cb(new Error('更新失败'), null)
     obj.save(updateObj, cb)
   })
 }
@@ -176,9 +176,9 @@ module.exports.destroy = function (modelName, id, cb) {
   var db = databaseModule.getDatabase()
   var Model = db.models[modelName]
   Model.get(id, function (err, obj) {
-    if (err) return cb('无模型ID')
+    if (err) return cb(new Error('无模型ID'))
     obj.remove(function (err) {
-      if (err) return cb('删除失败')
+      if (err) return cb(new Error('删除失败'))
       return cb(null)
     })
   })
@@ -207,7 +207,7 @@ module.exports.exists = function (modelName, conditions, cb) {
   var db = databaseModule.getDatabase()
   var Model = db.models[modelName]
   Model.exists(conditions, function (err, isExists) {
-    if (err) return cb('查询失败')
+    if (err) return cb(new Error('查询失败'))
     cb(null, isExists)
   })
 }
